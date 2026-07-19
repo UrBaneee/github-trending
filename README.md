@@ -53,3 +53,14 @@ prompts/translate.md        — bilingual/Chinese translation rules
 User state (config, wiki, delivery keys) lives outside the repo at
 `~/.github-trending/`, so pulling skill updates never clobbers your wiki or
 personal prompt customizations.
+
+## Credits
+
+`scripts/deliver.py` (Telegram/email/stdout delivery) is a Python port of the
+delivery script from [follow-builders](https://github.com/zarazhangrui/follow-builders)
+by Zara Zhang, used under its MIT license. The onboarding/config/scheduling
+conventions in `SKILL.md` are also modeled on that project's structure.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
