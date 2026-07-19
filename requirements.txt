@@ -1,5 +1,2 @@
 httpx
 beautifulsoup4
-anthropic
-openai
-python-dotenv
