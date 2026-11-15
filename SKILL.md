@@ -1,18 +1,33 @@
 ---
 name: github-trending
-description: Daily GitHub Trending digest with a persistent per-repo wiki — scrapes trending repos, remixes them into a plain-language briefing, and tracks each repo's history across days. Use when the user wants trending repo updates, invokes /trending, or asks to check/maintain their trending wiki. No API keys required for the core digest — only for optional Telegram/email delivery.
+description: GitHub project discovery and guided study with a persistent personal wiki. Use for trending repo updates, /trending, "study owner/repo", continuing a repo study, reviewing a learning trail, or maintaining the trending wiki. No API keys required for the core workflow.
 ---
 
-# GitHub Trending Digest
+# GitHub Trending 2.0 — Discovery + Guided Study
 
-You track GitHub's trending repos daily and turn them into a plain-language
-briefing for someone transitioning into AI/LLM/agent work — curious, technical
-enough to run code, but without deep systems experience.
+You help someone transitioning into AI/LLM/agent work discover relevant GitHub
+projects and actually understand them. The user is technical enough to run code
+but may not yet have deep systems or architecture experience.
+
+This skill has two connected modes:
+
+1. **Discovery Mode** (`/trending`) finds projects worth noticing.
+2. **Study Mode** (`study owner/repo`) guides the user through building and
+   correcting a mental model of one project.
+
+Do not confuse a summary with learning. A summary is a starting hypothesis.
+Study Mode must inspect evidence, invite the user's own questions, trace at least
+one concrete path through the code, test a capability boundary, and preserve how
+the user's understanding changes.
 
 Unlike a one-shot summary, you maintain a **persistent wiki**: each repo gets its
 own page that accumulates history (star trajectory, first-seen date, what
 changed) across days, instead of a disconnected daily snapshot. See "Wiki
 Maintenance" below.
+
+Study Mode also maintains a **personal learning trail** for each studied repo:
+questions asked, initial beliefs, corrected misconceptions, code paths traced,
+boundary tests, current understanding, and reusable lessons.
 
 **No API keys are required for the core digest.** The scraping step is a plain
 script; the remix/analysis step runs through you (the agent) directly, using
@@ -99,7 +114,7 @@ The wiki lives at `~/.github-trending/wiki/`:
 
 For each repo in today's JSON:
 - **If `wiki/repos/<owner>-<repo>.md` doesn't exist**: it's new. Write the full
-  7-section analysis (`prompts/summarize-repo.md`) as the page body, with
+  8-section discovery analysis (`prompts/summarize-repo.md`) as the page body, with
   frontmatter (`first_seen`, `language`, `url`), and a "History" table with
   today's row.
 - **If it exists**: read it first. Append a row to the History table (date,
@@ -123,6 +138,11 @@ Assemble per `prompts/digest-intro.md`.
 **Rules**: never fabricate stats or repo purpose beyond what's in the JSON/README;
 every repo needs its URL; skip a repo entirely if its README gave you nothing
 real to say, rather than padding.
+
+End each repo entry with a short **Study hook**: one concrete question that would
+help the reader move beyond the README. Prefer questions about inputs/outputs,
+the core execution path, author contribution, AI boundaries, or production
+tradeoffs. Do not answer the hook in the digest.
 
 ### 4. Apply language
 
@@ -151,6 +171,120 @@ When the user asks to "check/clean up the trending wiki," scan `wiki/`:
   (per their "Compared to" sections) that don't link to one another.
 
 Report findings; only make changes the user confirms.
+
+## Guided Study Workflow
+
+Trigger this workflow when the user says any of the following or equivalent:
+
+- `study owner/repo`
+- `deep dive owner/repo`
+- `continue studying owner/repo`
+- `what should I ask about owner/repo?`
+- `show my learning trail for owner/repo`
+
+Read `prompts/study-repo.md` before beginning. That file owns the learning
+sequence, evidence standard, and completion test.
+
+### 1. Resolve and inspect the repository
+
+Accept a GitHub URL, `owner/repo`, or a repo already present in the wiki.
+
+Use a local evidence cache at:
+
+```text
+~/.github-trending/cache/repos/<owner>-<repo>/
+```
+
+- If missing, shallow-clone the public repo there.
+- If it already exists, fetch and fast-forward when safe.
+- Record the analyzed commit in the study note.
+- Never modify or push to the studied repository.
+- If cloning is unavailable, use the README data already captured by Discovery
+  Mode, clearly label the evidence limitation, and do not pretend to have read
+  source code.
+
+Inspect only what is needed for the current learning stage. Begin with README,
+top-level structure, manifests, entry points, and relevant configuration. Follow
+specific code paths later instead of dumping the entire repository into context.
+
+### 2. Create or resume the learning trail
+
+Learning trails live at:
+
+```text
+~/.github-trending/wiki/studies/<owner>-<repo>.md
+```
+
+Use `prompts/learning-trail-template.md` when creating one. Link the study note
+from the corresponding `wiki/repos/<owner>-<repo>.md` page when that page exists.
+
+Before asking anything already answered, read the existing trail. Resume from
+the first incomplete stage or from the user's newest question.
+
+### 3. Teach in stages, not as a report dump
+
+Move through these stages:
+
+1. **Reality** — user, original workflow, pain, and business outcome.
+2. **System Map** — inputs, transformations, outputs, and consumers.
+3. **Trace One Path** — follow one real request or result through code.
+4. **Mechanism and AI Boundary** — deterministic logic, models, tools, and
+   managed/platform capabilities. Skip AI-specific analysis when irrelevant.
+5. **Capability Boundary** — test a realistic question the demo did not prepare.
+6. **Contribution and Production** — platform vs author work; demo vs production.
+7. **Teach-back** — the user explains the project in their own words.
+
+Default to one stage per conversational turn. A stage may take multiple turns if
+the user's questions reveal a misconception worth resolving. Do not rush toward
+completion merely to fill the template.
+
+### 4. Use questions as evidence of learning
+
+Capture the user's actual questions in the learning trail. When an answer changes
+the user's understanding, record:
+
+```text
+Initial belief -> Evidence inspected -> Revised understanding
+```
+
+Do not praise every answer. Identify what is correct, what is incomplete, and
+what evidence would settle remaining uncertainty.
+
+### 5. Produce focused code walkthroughs
+
+When a question requires code-level understanding, trace a narrow path such as:
+
+```text
+user action -> entry point -> orchestration -> core logic -> external system -> output
+```
+
+Record file paths, symbols, inputs, and outputs. Avoid line-by-line narration of
+unrelated files.
+
+### 6. Complete with transfer, not recall
+
+A study is complete enough only when the user can explain:
+
+- who the project helps and what changes because it exists;
+- the end-to-end input/output path;
+- one important result's origin;
+- the boundary between deterministic logic, AI, and platform capabilities;
+- what the author actually contributed;
+- one realistic limitation or extension;
+- what design idea the user can reuse elsewhere.
+
+Write the final synthesis into the learning trail in the user's own wording when
+possible. Mark uncertain claims as uncertain.
+
+## Study-Wiki Maintenance
+
+When checking or cleaning the wiki, also inspect `wiki/studies/` for:
+
+- trails that claim code inspection but lack a commit or file evidence;
+- unanswered questions that now have enough evidence to resolve;
+- repo facts incorrectly stored as personal conclusions, or vice versa;
+- completed studies with no teach-back or transferable lesson;
+- duplicate concepts that should cross-link rather than be repeated.
 
 ## Configuration Handling
 

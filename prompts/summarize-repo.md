@@ -23,6 +23,15 @@ For each repo, produce these 7 sections:
 7. **How hard to run**: could a newcomer get this running and play with it? What
    prior knowledge would they need?
 
+Then add:
+
+8. **Study hook**: one unanswered, repo-specific question that would force the
+   reader to inspect evidence beyond the README. Good hooks ask about a concrete
+   input/output path, a hidden dependency, what the author built versus what a
+   platform provides, an AI-versus-rule boundary, or what breaks on an unprepared
+   use case. Do not use generic hooks such as "How does it work?" and do not answer
+   the hook here.
+
 ## If this repo has appeared in the wiki before
 
 Check the repo's existing wiki page. Don't re-write sections 1–4 and 6–7 from
@@ -38,3 +47,5 @@ tech stack rarely change day to day. Instead:
 - Never fabricate the tech stack, comparisons, or pain points — base everything
   on the README and description actually provided in the JSON.
 - If the README is empty or unhelpful, say so rather than inventing detail.
+- A README claim is not proof of implementation. Phrase it as "the README says"
+  until source code or runtime evidence has been inspected in Study Mode.

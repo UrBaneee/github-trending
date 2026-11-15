@@ -23,7 +23,8 @@ first). For each:
   "### 1. owner/repo ⭐ 12,400 (+850 today)"
 - A badge noting 🆕 New (first time in the wiki) or 📈 Returning (seen before,
   with the date first seen)
-- The 7-section analysis from the repo-analysis prompt
+- The 8-section discovery analysis from the repo-analysis prompt, including its
+  repo-specific Study hook
 - The repo's URL
 
 ## Rules
@@ -34,4 +35,5 @@ first). For each:
 - If a repo's README couldn't be fetched, say so plainly instead of guessing at
   what the project does.
 - Keep formatting scannable — this is read on a phone screen.
+- Close the digest with: `Want to truly learn one? Say: study owner/repo`.
 - At the very end, add: "Generated through the github-trending skill."
